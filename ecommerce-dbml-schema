@@ -1,0 +1,163 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table users {
+  id integer [primary key, increment]
+  username varchar [unique, not null]
+  email varchar [unique, not null]
+  password_hash varchar [not null]
+  phone_number varchar
+  role varchar [not null, default: 'customer', note: 'customer, admin, delivery_agent']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table addresses {
+  id integer [primary key, increment]
+  user_id integer [not null]
+  address_line1 varchar [not null]
+  address_line2 varchar
+  city varchar [not null]
+  state varchar [not null]
+  postal_code varchar [not null]
+  country varchar [not null]
+  is_default boolean [default: false]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table categories {
+  id integer [primary key, increment]
+  name varchar [unique, not null]
+  description text
+  parent_category_id integer
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table products {
+  id integer [primary key, increment]
+  name varchar [not null]
+  description text
+  price decimal [not null]
+  stock_quantity integer [not null]
+  category_id integer [not null]
+  image_url varchar
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table product_variants {
+  id integer [primary key, increment]
+  product_id integer [not null]
+  attribute_name varchar [not null, note: 'e.g., color, size']
+  attribute_value varchar [not null, note: 'e.g., Red, M']
+  additional_price decimal [default: 0.00]
+  stock_quantity integer [not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table carts {
+  id integer [primary key, increment]
+  user_id integer [unique, not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table cart_items {
+  id integer [primary key, increment]
+  cart_id integer [not null]
+  product_id integer [not null]
+  product_variant_id integer // Nullable, if product has no variants
+  quantity integer [not null]
+  price_at_add decimal [not null, note: 'Price of product at the time it was added to cart']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table orders {
+  id integer [primary key, increment]
+  user_id integer [not null]
+  shipping_address_id integer [not null]
+  total_amount decimal [not null]
+  order_status varchar [not null, default: 'pending', note: 'pending, processing, dispatched, out_for_delivery, delivered, cancelled']
+  payment_status varchar [not null, default: 'pending', note: 'pending, paid, failed, refunded']
+  order_date timestamp [default: `now()`]
+  delivered_at timestamp
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table order_items {
+  id integer [primary key, increment]
+  order_id integer [not null]
+  product_id integer [not null]
+  product_variant_id integer // Nullable, if product has no variants
+  quantity integer [not null]
+  unit_price decimal [not null]
+  subtotal decimal [not null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table delivery_agents {
+  id integer [primary key, increment]
+  user_id integer [unique, not null] // Links to a user with role 'delivery_agent'
+  company_name varchar
+  contact_number varchar
+  status varchar [not null, default: 'available', note: 'available, assigned, busy']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+Table order_deliveries {
+  id integer [primary key, increment]
+  order_id integer [unique, not null]
+  delivery_agent_id integer
+  tracking_number varchar [unique]
+  delivery_status varchar [not null, default: 'assigned', note: 'assigned, picked_up, in_transit, delivered, failed']
+  assigned_at timestamp [default: `now()`]
+  picked_up_at timestamp
+  delivered_at timestamp
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+}
+
+// Relationships
+
+// User and Address
+Ref: addresses.user_id > users.id
+
+// Category hierarchy (self-referencing)
+Ref: categories.parent_category_id > categories.id
+
+// Product and Category
+Ref: products.category_id > categories.id
+
+// Product Variants
+Ref: product_variants.product_id > products.id
+
+// Cart and User
+Ref: carts.user_id > users.id
+
+// Cart Items and Cart, Product, Product Variant
+Ref: cart_items.cart_id > carts.id
+Ref: cart_items.product_id > products.id
+Ref: cart_items.product_variant_id > product_variants.id
+
+// Orders and User, Address
+Ref: orders.user_id > users.id
+Ref: orders.shipping_address_id > addresses.id
+
+// Order Items and Order, Product, Product Variant
+Ref: order_items.order_id > orders.id
+Ref: order_items.product_id > products.id
+Ref: order_items.product_variant_id > product_variants.id
+
+// Delivery Agents
+Ref: delivery_agents.user_id > users.id
+
+// Order Deliveries
+Ref: order_deliveries.order_id > orders.id
+Ref: order_deliveries.delivery_agent_id > delivery_agents.id
