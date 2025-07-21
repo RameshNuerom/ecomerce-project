@@ -1,0 +1,357 @@
+Okay, understood! We can definitely create a Postman collection. This is an excellent idea for organizing, testing, and demonstrating all the API endpoints we've built.
+
+I will provide you with a structured outline of a Postman Collection, including example requests for each major functional area. You can then use this to manually create your collection in Postman.
+
+How to Create Your Postman Collection
+Open Postman.
+
+Click on Collections in the sidebar.
+
+Click the + button or "New Collection" to create a new collection.
+
+Give it a name, e.g., "E-commerce Backend API".
+
+Set Up Collection Variables
+It's best practice to use variables for your base URL and JWTs so you don't have to change them in every request.
+
+Click on your new collection.
+
+Go to the Variables tab.
+
+Add the following variables (you'll fill in the CURRENT VALUE as you get the tokens from login responses):
+
+Variable Name	Initial Value (Example)	Current Value (Fill after login)
+baseUrl	http://localhost:3000/api	http://localhost:3000/api
+adminToken	eyJ...	eyJ...
+customerToken	eyJ...	eyJ...
+deliveryAgentToken	eyJ...	eyJ...
+productId	1	1
+categoryId	1	1
+orderId	1	1
+reviewId	1	1
+addressId	1	1
+wishlistItemId	1	1
+userId	1	1
+agentId	1	1
+
+Export to Sheets
+Structure Your Requests (Folders and Requests)
+You can create folders within your collection to keep requests organized.
+
+1. Authentication (Folder)
+A. Register User (Customer)
+
+Method: POST
+
+URL: {{baseUrl}}/auth/register
+
+Body (raw JSON):
+
+JSON
+
+{
+    "username": "testcustomer",
+    "email": "customer@example.com",
+    "password": "password123",
+    "role": "customer"
+}
+Tests (Post-request Script):
+
+JavaScript
+
+var jsonData = pm.response.json();
+if (jsonData.token) {
+    pm.collectionVariables.set("customerToken", jsonData.token);
+    console.log("Customer Token: " + jsonData.token);
+}
+B. Login User (Customer)
+
+Method: POST
+
+URL: {{baseUrl}}/auth/login
+
+Body (raw JSON):
+
+JSON
+
+{
+    "email": "customer@example.com",
+    "password": "password123"
+}
+Tests (Post-request Script):
+
+JavaScript
+
+var jsonData = pm.response.json();
+if (jsonData.token) {
+    pm.collectionVariables.set("customerToken", jsonData.token);
+    console.log("Customer Token: " + jsonData.token);
+}
+(Repeat similar Register/Login requests for admin and delivery_agent roles, setting adminToken and deliveryAgentToken variables respectively)
+
+2. Public Access (Folder)
+A. Get All Categories
+
+Method: GET
+
+URL: {{baseUrl}}/public/categories
+
+B. Get All Products (with Filters)
+
+Method: GET
+
+URL: {{baseUrl}}/public/products?searchTerm=shirt&categoryId={{categoryId}}&minPrice=100&maxPrice=500&sortBy=price_asc
+
+(Adjust query parameters as needed)
+
+C. Get Product by ID
+
+Method: GET
+
+URL: {{baseUrl}}/public/products/{{productId}}
+
+3. Customer Actions (Folder - requires customerToken)
+Header for all requests in this folder: Authorization: Bearer {{customerToken}}
+
+A. Profile Management (Subfolder)
+* Get My Profile
+* Method: GET
+* URL: {{baseUrl}}/customer/profile
+* Update My Profile
+* Method: PUT
+* URL: {{baseUrl}}/customer/profile
+* Body (raw JSON): {"username": "UpdatedCustomerName"}
+
+B. Address Management (Subfolder)
+* Add New Address
+* Method: POST
+* URL: {{baseUrl}}/customer/addresses
+* Body (raw JSON):
+json { "address_line1": "123 Main St", "city": "Hyderabad", "state": "Telangana", "postal_code": "500001", "country": "India", "label": "Home", "is_default": true } 
+* Tests (Post-request Script):
+javascript var jsonData = pm.response.json(); if (jsonData.address && jsonData.address.id) { pm.collectionVariables.set("addressId", jsonData.address.id); console.log("Address ID: " + jsonData.address.id); } 
+* Get My Addresses
+* Method: GET
+* URL: {{baseUrl}}/customer/addresses
+* Get My Address by ID
+* Method: GET
+* URL: {{baseUrl}}/customer/addresses/{{addressId}}
+* Update My Address
+* Method: PUT
+* URL: {{baseUrl}}/customer/addresses/{{addressId}}
+* Body (raw JSON): {"label": "My New Home", "is_default": true}
+* Delete My Address
+* Method: DELETE
+* URL: {{baseUrl}}/customer/addresses/{{addressId}}
+
+C. Cart Management (Subfolder)
+* Get User Cart
+* Method: GET
+* URL: {{baseUrl}}/customer/cart
+* Add Item to Cart
+* Method: POST
+* URL: {{baseUrl}}/customer/cart/items
+* Body (raw JSON): {"productId": {{productId}}, "quantity": 1, "productVariantId": null}
+* Update Cart Item Quantity
+* Method: PUT
+* URL: {{baseUrl}}/customer/cart/items/CART_ITEM_ID (You'll need to get CART_ITEM_ID from the Get User Cart response)
+* Body (raw JSON): {"quantity": 2}
+* Remove Cart Item
+* Method: DELETE
+* URL: {{baseUrl}}/customer/cart/items/CART_ITEM_ID
+* Clear Cart
+* Method: DELETE
+* URL: {{baseUrl}}/customer/cart
+
+D. Order Management (Subfolder)
+* Place Order
+* Method: POST
+* URL: {{baseUrl}}/customer/orders
+* Body (raw JSON):
+json { "userAddressId": {{addressId}}, "paymentMethod": "Cash on Delivery" } 
+* Tests (Post-request Script):
+javascript var jsonData = pm.response.json(); if (jsonData.order && jsonData.order.id) { pm.collectionVariables.set("orderId", jsonData.order.id); console.log("Order ID: " + jsonData.order.id); } 
+* Get My Orders
+* Method: GET
+* URL: {{baseUrl}}/customer/orders
+* Get My Order Details
+* Method: GET
+* URL: {{baseUrl}}/customer/orders/{{orderId}}
+
+E. Product Reviews (Subfolder)
+* Submit/Update Review
+* Method: POST
+* URL: {{baseUrl}}/customer/reviews
+* Body (raw JSON):
+json { "productId": {{productId}}, "rating": 5, "reviewText": "Great product!" } 
+* Tests (Post-request Script):
+javascript var jsonData = pm.response.json(); if (jsonData.review && jsonData.review.id) { pm.collectionVariables.set("reviewId", jsonData.review.id); console.log("Review ID: " + jsonData.review.id); } 
+* Get My Reviews
+* Method: GET
+* URL: {{baseUrl}}/customer/reviews
+* Get My Review for Product
+* Method: GET
+* URL: {{baseUrl}}/customer/reviews/product/{{productId}}
+* Update My Review
+* Method: PUT
+* URL: {{baseUrl}}/customer/reviews/{{reviewId}}
+* Body (raw JSON): {"rating": 4, "reviewText": "Good, but could be better."}
+* Delete My Review
+* Method: DELETE
+* URL: {{baseUrl}}/customer/reviews/{{reviewId}}
+
+F. Wishlist (Subfolder)
+* Add Product to Wishlist
+* Method: POST
+* URL: {{baseUrl}}/customer/wishlist
+* Body (raw JSON): {"productId": {{productId}}}
+* Tests (Post-request Script):
+javascript var jsonData = pm.response.json(); if (jsonData.item && jsonData.item.id) { pm.collectionVariables.set("wishlistItemId", jsonData.item.id); console.log("Wishlist Item ID: " + jsonData.item.id); } 
+* Get My Wishlist
+* Method: GET
+* URL: {{baseUrl}}/customer/wishlist
+* Remove Product from Wishlist
+* Method: DELETE
+* URL: {{baseUrl}}/customer/wishlist/{{wishlistItemId}}
+
+4. Admin Actions (Folder - requires adminToken)
+Header for all requests in this folder: Authorization: Bearer {{adminToken}}
+
+A. User Management (Subfolder)
+* Get All Users
+* Method: GET
+* URL: {{baseUrl}}/admin/users
+* Get User by ID
+* Method: GET
+* URL: {{baseUrl}}/admin/users/{{userId}}
+* Update User Role
+* Method: PUT
+* URL: {{baseUrl}}/admin/users/{{userId}}/role
+* Body (raw JSON): {"role": "delivery_agent"}
+* Delete User
+* Method: DELETE
+* URL: {{baseUrl}}/admin/users/{{userId}}
+
+B. Category Management (Subfolder)
+* Create Category
+* Method: POST
+* URL: {{baseUrl}}/admin/categories
+* Body (raw JSON): {"name": "Electronics", "description": "Electronic gadgets"}
+* Get All Categories (Admin View)
+* Method: GET
+* URL: {{baseUrl}}/admin/categories
+* Get Category by ID (Admin View)
+* Method: GET
+* URL: {{baseUrl}}/admin/categories/{{categoryId}}
+* Update Category
+* Method: PUT
+* URL: {{baseUrl}}/admin/categories/{{categoryId}}
+* Body (raw JSON): {"name": "Updated Category Name"}
+* Delete Category
+* Method: DELETE
+* URL: {{baseUrl}}/admin/categories/{{categoryId}}
+
+C. Product Management (Subfolder)
+* Create Product
+* Method: POST
+* URL: {{baseUrl}}/admin/products
+* Body (raw JSON):
+json { "name": "New T-Shirt", "description": "A comfortable cotton t-shirt.", "price": 25.99, "stock_quantity": 100, "category_id": {{categoryId}}, "image_url": "http://example.com/tshirt.jpg" } 
+* Get All Products (Admin View)
+* Method: GET
+* URL: {{baseUrl}}/admin/products
+* Get Product by ID (Admin View)
+* Method: GET
+* URL: {{baseUrl}}/admin/products/{{productId}}
+* Update Product
+* Method: PUT
+* URL: {{baseUrl}}/admin/products/{{productId}}
+* Body (raw JSON): {"price": 24.99, "stock_quantity": 90}
+* Delete Product
+* Method: DELETE
+* URL: {{baseUrl}}/admin/products/{{productId}}
+* Add Product Variant
+* Method: POST
+* URL: {{baseUrl}}/admin/products/{{productId}}/variants
+* Body (raw JSON):
+json { "attribute_name": "Size", "attribute_value": "L", "additional_price": 5.00, "stock_quantity": 30 } 
+* Update Product Variant
+* Method: PUT
+* URL: {{baseUrl}}/admin/products/{{productId}}/variants/VARIANT_ID (Get VARIANT_ID from product details)
+* Body (raw JSON): {"stock_quantity": 25}
+* Delete Product Variant
+* Method: DELETE
+* URL: {{baseUrl}}/admin/products/{{productId}}/variants/VARIANT_ID
+
+D. Delivery Agent Management (Subfolder)
+* Create Delivery Agent Profile
+* Method: POST
+* URL: {{baseUrl}}/admin/delivery-agents
+* Body (raw JSON): {"user_id": USER_ID_OF_AGENT_ROLE, "name": "John Doe", "phone_number": "9876543210"}
+* Tests (Post-request Script):
+javascript var jsonData = pm.response.json(); if (jsonData.agent && jsonData.agent.id) { pm.collectionVariables.set("agentId", jsonData.agent.id); console.log("Agent ID: " + jsonData.agent.id); } 
+* Get All Delivery Agents
+* Method: GET
+* URL: {{baseUrl}}/admin/delivery-agents
+* Get Delivery Agent by ID
+* Method: GET
+* URL: {{baseUrl}}/admin/delivery-agents/{{agentId}}
+* Update Delivery Agent Profile
+* Method: PUT
+* URL: {{baseUrl}}/admin/delivery-agents/{{agentId}}
+* Body (raw JSON): {"phone_number": "1122334455"}
+* Delete Delivery Agent Profile
+* Method: DELETE
+* URL: {{baseUrl}}/admin/delivery-agents/{{agentId}}
+
+E. Order Management (Admin View) (Subfolder)
+* Get All Orders
+* Method: GET
+* URL: {{baseUrl}}/admin/orders
+* Get Order Details by ID
+* Method: GET
+* URL: {{baseUrl}}/admin/orders/{{orderId}}
+* Update Order Status
+* Method: PUT
+* URL: {{baseUrl}}/admin/orders/{{orderId}}/status
+* Body (raw JSON): {"status": "shipped"}
+* Assign Delivery Agent
+* Method: PUT
+* URL: {{baseUrl}}/admin/orders/{{orderId}}/assign-agent
+* Body (raw JSON): {"agentId": {{agentId}}}
+
+5. Delivery Agent Actions (Folder - requires deliveryAgentToken)
+Header for all requests in this folder: Authorization: Bearer {{deliveryAgentToken}}
+
+A. Profile Management (Subfolder)
+* Get My Agent Profile
+* Method: GET
+* URL: {{baseUrl}}/delivery-agent/profile
+* Update My Agent Profile
+* Method: PUT
+* URL: {{baseUrl}}/delivery-agent/profile
+* Body (raw JSON): {"phone_number": "9988776655"}
+
+B. Order Management (Agent View) (Subfolder)
+* Get My Assigned Orders
+* Method: GET
+* URL: {{baseUrl}}/delivery-agent/orders
+* Get Specific Assigned Order Details
+* Method: GET
+* URL: {{baseUrl}}/delivery-agent/orders/{{orderId}}
+* Update Delivery Status
+* Method: PUT
+* URL: {{baseUrl}}/delivery-agent/orders/{{orderId}}/delivery-status
+* Body (raw JSON): {"status": "out_for_delivery"}
+
+Next Steps for You:
+
+Manually create this structure in Postman.
+
+Run the Login requests for Admin, Customer, and Delivery Agent first. This will populate your adminToken, customerToken, and deliveryAgentToken collection variables.
+
+Update productId, categoryId, orderId, addressId, reviewId, wishlistItemId, userId, agentId variables in your collection as you create/fetch these entities through the API.
+
+Test each request to ensure it works as expected.
+
+This Postman collection will serve as excellent documentation and a powerful testing tool for your backend API! Let me know once you've created this collection and run through some tests.
