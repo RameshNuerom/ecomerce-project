@@ -6,6 +6,7 @@ const categoryService = require('../../services/admin/categoryService'); // Reus
 const getCategories = async (req, res, next) => {
   try {
     const categories = await categoryService.getCategories(); // Calls service to get all categories
+    console.log("🔍 Categories fetched:", categories);
     res.status(200).json(categories);
   } catch (error) {
     next(error);
