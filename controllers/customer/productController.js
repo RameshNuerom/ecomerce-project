@@ -23,6 +23,34 @@ const getProductById = async (req, res, next) => {
   }
 };
 
+const searchProducts = async (req, res, next) => {
+  try {
+    const {
+      categoryId,
+      searchTerm,
+      minPrice,
+      maxPrice,
+      sortBy,
+      limit,
+      offset
+    } = req.query;
+
+    const products = await productService.getFilteredProducts(
+      categoryId,
+      searchTerm,
+      minPrice,
+      maxPrice,
+      sortBy,
+      limit,
+      offset
+    );
+
+    res.status(200).json(products);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // You might add search/filter product methods here in the future:
 // const searchProducts = async (req, res, next) => { /* ... */ };
 // const getProductsByCategory = async (req, res, next) => { /* ... */ };
@@ -31,4 +59,5 @@ const getProductById = async (req, res, next) => {
 module.exports = {
   getProducts,
   getProductById,
+  searchProducts
 };

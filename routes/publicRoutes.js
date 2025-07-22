@@ -12,6 +12,8 @@ router.get('/categories/:id', customerCategoryController.getCategoryById);
 // --- Public Product Routes ---
 router.get('/products', customerProductController.getProducts);
 router.get('/products/:id', customerProductController.getProductById);
+router.get('/products/search', customerProductController.searchProducts);
+
 
 // You can add more public routes here, e.g., for search, recommendations, etc.
 
