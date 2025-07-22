@@ -145,6 +145,26 @@ const deleteProductVariant = async (id) => {
     return deletedVariant;
 };
 
+const getFilteredProducts = async (
+  categoryId,
+  searchTerm,
+  minPrice,
+  maxPrice,
+  sortBy,
+  limit,
+  offset
+) => {
+  return await productModel.getFilteredProducts(
+    categoryId,
+    searchTerm,
+    minPrice,
+    maxPrice,
+    sortBy,
+    limit,
+    offset
+  );
+};
+
 
 module.exports = {
   createProduct,
@@ -155,4 +175,5 @@ module.exports = {
   createProductVariant,
   updateProductVariant,
   deleteProductVariant,
+  getFilteredProducts,
 }; 
