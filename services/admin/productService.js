@@ -165,6 +165,14 @@ const getFilteredProducts = async (
   );
 };
 
+const getProductVariants = async (productId) => {
+  return await productModel.getProductVariants(productId);
+};
+
+const getProductVariantById = async (variantId) => {
+  return await productModel.getProductVariantById(variantId);
+};
+
 
 module.exports = {
   createProduct,
@@ -176,4 +184,6 @@ module.exports = {
   updateProductVariant,
   deleteProductVariant,
   getFilteredProducts,
+  getProductVariants,
+  getProductVariantById
 }; 

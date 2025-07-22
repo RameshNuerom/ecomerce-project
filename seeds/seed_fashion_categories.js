@@ -1,15 +1,10 @@
-// seeds/YYYYMMDDHHMMSS_seed_fashion_categories.js
-
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
 exports.seed = async function(knex) {
-  // Deletes ALL existing entries in the categories table before seeding
-  // This ensures a clean slate for your 10 records.
+  // Step 1: Delete product_variants → products → categories (order matters)
+  await knex('product_variants').del();
+  await knex('products').del();
   await knex('categories').del();
 
-  // Insert parent categories first
+  // Step 2: Insert parent categories
   const [menId, womenId, kidsId, accessoriesId] = await knex('categories').insert([
     { name: 'Men', description: 'Fashion for Men', created_at: knex.fn.now(), updated_at: knex.fn.now() },
     { name: 'Women', description: 'Fashion for Women', created_at: knex.fn.now(), updated_at: knex.fn.now() },
@@ -17,7 +12,7 @@ exports.seed = async function(knex) {
     { name: 'Accessories', description: 'Fashion Accessories', created_at: knex.fn.now(), updated_at: knex.fn.now() },
   ], ['id']); // Return the IDs of the inserted rows
 
-  // Insert subcategories with parent_category_id
+  // Step 3: Insert subcategories
   await knex('categories').insert([
     { name: 'T-Shirts', description: 'Casual T-Shirts', parent_category_id: menId.id, created_at: knex.fn.now(), updated_at: knex.fn.now() },
     { name: 'Jeans', description: 'Denim Jeans', parent_category_id: menId.id, created_at: knex.fn.now(), updated_at: knex.fn.now() },

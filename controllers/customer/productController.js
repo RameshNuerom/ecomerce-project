@@ -51,6 +51,26 @@ const searchProducts = async (req, res, next) => {
   }
 };
 
+const getProductVariants = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const variants = await productService.getProductVariants(id);
+    res.status(200).json(variants);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getProductVariantById = async (req, res, next) => {
+  try {
+    const { variantId } = req.params;
+    const variant = await productService.getProductVariantById(variantId);
+    res.status(200).json(variant);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // You might add search/filter product methods here in the future:
 // const searchProducts = async (req, res, next) => { /* ... */ };
 // const getProductsByCategory = async (req, res, next) => { /* ... */ };
@@ -59,5 +79,7 @@ const searchProducts = async (req, res, next) => {
 module.exports = {
   getProducts,
   getProductById,
-  searchProducts
+  searchProducts,
+  getProductVariants,
+  getProductVariantById
 };

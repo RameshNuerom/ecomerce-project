@@ -13,6 +13,8 @@ router.get('/categories/:id', customerCategoryController.getCategoryById);
 router.get('/products/search', customerProductController.searchProducts);
 router.get('/products', customerProductController.getProducts);
 router.get('/products/:id', customerProductController.getProductById);
+router.get('/products/:id/variants', customerProductController.getProductVariants);
+router.get('/variants/:variantId', customerProductController.getProductVariantById);
 
 
 // You can add more public routes here, e.g., for search, recommendations, etc.
